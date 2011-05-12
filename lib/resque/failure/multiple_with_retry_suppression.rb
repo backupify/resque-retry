@@ -39,23 +39,6 @@ module Resque
         unless retryable? && retrying?
           cleanup_retry_failure_log!
           super
-        else
-          data = {
-            :failed_at => Time.now.strftime("%Y/%m/%d %H:%M:%S"),
-            :payload   => payload,
-            :exception => exception.class.to_s,
-            :error     => exception.to_s,
-            :backtrace => Array(exception.backtrace),
-            :worker    => worker.to_s,
-            :queue     => queue
-          }
-
-          # Register cleanup hooks.
-          unless klass.respond_to?(:after_perform_retry_failure_cleanup)
-            klass.send(:extend, CleanupHooks)
-          end
-
-          redis[failure_key] = Resque.encode(data)
         end
       end
 
